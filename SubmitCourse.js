@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 
-const SubmitCourse = ({ onCourseAdded }) => {
+const SubmitCourse = () => {
   const [courses, setCourses] = useState([{ course: '', grade: '', hours: '' }]);
   const [response, setResponse] = useState(null);
-  const [error, setError] = useState(null);
 
   const handleChange = (index, event) => {
     const newCourses = [...courses];
@@ -22,7 +22,6 @@ const SubmitCourse = ({ onCourseAdded }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError(null); // Reset error state on new submit
 
     const data = {
       courses: courses.map(course => ({
@@ -33,30 +32,12 @@ const SubmitCourse = ({ onCourseAdded }) => {
     };
 
     try {
-      const res = await fetch('https://us-central1-gpacalc-423415.cloudfunctions.net/calcAGPA', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-      });
-
-      if (!res.ok) {
-        // If the response status is not OK, throw an error with status text
-        throw new Error(`HTTP error! status: ${res.status} - ${res.statusText}`);
-      }
-
-      const result = await res.json();
-      console.log('API response:', result); // Log the API response
-      setResponse(result);
-      // Clear the fields after successful submission
-      setCourses([{ course: '', grade: '', hours: '' }]);
-      if (onCourseAdded) {
-        onCourseAdded(); // Notify the parent component of the new course addition
-      }
+      const res = await axios.post('https://us-central1-gpacalc-423415.cloudfunctions.net/calcAGPA', data);
+      console.log('API response:', res.data); // Log the API response
+      setResponse(res.data);
     } catch (err) {
       console.error('API error:', err);
-      setError(`An error occurred: ${err.message}`); // Set error state with detailed message
+      setResponse({ error: 'An error occurred' });
     }
   };
 
@@ -106,14 +87,13 @@ const SubmitCourse = ({ onCourseAdded }) => {
         <button type="button" onClick={handleAddCourse}>Add Course</button>
         <button type="submit">Submit</button>
       </form>
-      {response && !response.error && (
+      {response && (
         <div>
-          <p>GPA: {response.gpa}</p>
-        </div>
-      )}
-      {error && (
-        <div>
-          <p style={{ color: 'white' }}>Error: {error}</p>
+          {response.error ? (
+            <p>Error: {response.error}</p>
+          ) : (
+            <p>GPA: {response.gpa}</p>
+          )}
         </div>
       )}
     </div>
