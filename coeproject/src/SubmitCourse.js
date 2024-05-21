@@ -44,7 +44,7 @@ const SubmitCourse = () => {
 
       if (!res.ok) {
         // If the response status is not OK, throw an error with status text
-        throw new Error(`HTTP error! status: ${res.status} - ${res.statusText}`);
+        throw new Error(`HTTP error!! status: ${res.status} - ${res.statusText}`);
       }
 
       const result = await res.json();
